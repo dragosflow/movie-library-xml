@@ -1,0 +1,60 @@
+:root {
+  --angle: 45deg;
+  --opacity: 0.5;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.moving-borders {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  min-width: 100vw;
+  border-radius: 10px;
+  padding: 2rem;
+
+  --border-size: 0.3rem;
+  border: var(--border-size) solid transparent;
+
+  border-image: conic-gradient(
+      from var(--angle),
+      #ffffff 0deg 90deg,
+      #0666e3 90deg 180deg,
+      #ffffff 180deg 270deg,
+      #0666e3 270deg 360deg
+    )
+    1 stretch;
+  background: rgb(255 255 255 / var(--opacity));
+}
+
+@property --opacity {
+  syntax: "<number>";
+  initial-value: 0.5;
+  inherits: false;
+}
+
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes opacityChange {
+  to {
+    --opacity: 1;
+  }
+}
+
+@keyframes rotate {
+  to {
+    --angle: 360deg;
+  }
+}
+
+.moving-borders {
+  animation: rotate 120s linear infinite, opacityChange 19s infinite alternate;
+}
