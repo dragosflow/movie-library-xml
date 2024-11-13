@@ -3,6 +3,19 @@
   --opacity: 0.5;
 }
 
+html,
+body {
+  overflow: auto; /* Allows scrolling */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Hide scrollbar for WebKit browsers (Chrome, Safari) */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
 *,
 *::before,
 *::after {
@@ -11,11 +24,13 @@
 
 .moving-borders {
   width: 100%;
-  height: 100%;
+  height: 100vh;
   min-height: 100vh;
   min-width: 100vw;
   border-radius: 10px;
-  padding: 2rem;
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0); /* Transparent background */
+  pointer-events: none;
 
   --border-size: 0.3rem;
   border: var(--border-size) solid transparent;
@@ -28,7 +43,6 @@
       #0666e3 270deg 360deg
     )
     1 stretch;
-  background: rgb(255 255 255 / var(--opacity));
 }
 
 @property --opacity {
@@ -57,4 +71,15 @@
 
 .moving-borders {
   animation: rotate 120s linear infinite, opacityChange 19s infinite alternate;
+}
+
+.fade {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.fade-active {
+  opacity: 1;
+  transform: scale(1);
 }

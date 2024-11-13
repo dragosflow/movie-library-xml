@@ -21,6 +21,8 @@
   "dependencies": {
     "concurrently": "^9.1.0",
     "fast-xml-parser": "^4.5.0",
+    "react-syntax-highlighter": "^15.6.1",
+    "sax": "^1.4.1",
     "xmldom": "^0.6.0"
   }
 }

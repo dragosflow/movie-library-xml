@@ -1,45 +1,27 @@
-import { useState } from "react";
-import DOMMovieCollection from "./components/DOMParser";
-import JSONMovieCollection from "./components/JSONParser";
 import "./App.css";
+import { useState } from "react";
+import { Homework1 } from "./components/Homework1";
+import BackButton from "./components/BackButton";
+import Options from "./components/Options";
 
 function App() {
-  const [activeTab, setActiveTab] = useState("DOMParser");
+  const [activeTab, setActiveTab] = useState(1);
 
   return (
-    <div className='moving-borders'>
-      <h1 className='text-5xl font-bold mt-5 mb-10 hover:opacity-80 cursor-pointer'>
-        #1
-      </h1>
-      <div className='flex  space-x-4 my-4 mb-10'>
-        <button
-          onClick={() => setActiveTab("DOMParser")}
-          className={`px-4 py-2 rounded transition duration-200 ${
-            activeTab === "DOMParser"
-              ? "bg-blue-700 text-white"
-              : "bg-gray-300 text-black hover:bg-gray-400"
-          }`}
-        >
-          DOM Parser
-        </button>
-        <button
-          onClick={() => setActiveTab("FastParser")}
-          className={`px-4 py-2 rounded transition duration-200 ${
-            activeTab === "FastParser"
-              ? "bg-blue-700 text-white"
-              : "bg-gray-300 text-black hover:bg-gray-400"
-          }`}
-        >
-          Fast Parser
-        </button>
-      </div>
+    <div className=''>
+      <div className='moving-borders z-50'></div>
+      <div className='p-[2.5rem]'>
+        {activeTab !== 0 && <BackButton onClick={() => setActiveTab(0)} />}
 
-      <div>
-        {activeTab === "DOMParser" ? (
-          <DOMMovieCollection />
-        ) : (
-          <JSONMovieCollection />
-        )}
+        <div className={activeTab === 0 ? "fade fade-active" : "fade"}>
+          {activeTab === 0 && (
+            <Options onClick={(number) => setActiveTab(number)} />
+          )}
+        </div>
+
+        <div className={activeTab === 1 ? "fade fade-active" : "fade"}>
+          {activeTab === 1 && <Homework1 />}
+        </div>
       </div>
     </div>
   );

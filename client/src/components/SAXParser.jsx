@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-function DOMMovieCollection() {
+function SAXMovieCollection() {
   const [movies, setMovies] = useState(null);
   const [actors, setActors] = useState(null);
   const [genres, setGenres] = useState(null);
@@ -9,109 +9,88 @@ function DOMMovieCollection() {
   const [showMore, setShowMore] = useState(false);
 
   useEffect(() => {
-    const fetchXMLData = async () => {
-      const data = await window.electronAPI.loadXMLData();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(data, "application/xml");
+    const fetchData = async () => {
+      const data = await window.electronAPI.loadXMLDataSax();
+      console.log("SAX Parsed Data:", data);
 
-      const actorElements = Array.from(doc.getElementsByTagName("actor"));
-      const actorData = actorElements
-        .map((actor) => ({
-          id: actor.getAttribute("id"),
-          name: actor.getElementsByTagName("name")[0]?.textContent || "",
-          nationality:
-            actor.getElementsByTagName("nationality")[0]?.textContent || "",
-        }))
-        .filter((actor) => actor.name && actor.nationality);
-
-      const actorMap = Object.fromEntries(
-        actorData.map((actor) => [actor.id, actor])
-      );
-
-      const genreElements = Array.from(doc.getElementsByTagName("genre"));
-      const genreData = genreElements.map((genre) => ({
-        id: genre.getAttribute("id"),
-        name: genre.getElementsByTagName("name")[0]?.textContent || "",
-        description:
-          genre.getElementsByTagName("description")[0]?.textContent || "",
-      }));
       const genreMap = Object.fromEntries(
-        genreData.map((genre) => [genre.id, genre.name])
+        data.genres.map((genre) => [genre.id, genre.name])
+      );
+      const actorMap = Object.fromEntries(
+        data.actors.map((actor) => [actor.id, actor])
       );
 
-      const movieElements = Array.from(doc.getElementsByTagName("movie"));
-      const movieData = movieElements.map((movie) => ({
-        title: movie.getElementsByTagName("title")[0].textContent,
-        year: movie.getElementsByTagName("year")[0].textContent,
-        director: movie.getElementsByTagName("director")[0].textContent,
-        genre: genreMap[movie.getAttribute("genreId")] || "Unknown Genre",
-        actors: Array.from(movie.getElementsByTagName("actor")).map(
-          (actor) =>
-            actorMap[actor.getAttribute("actorId")] || {
+      const movieData = data.movies.map((movie) => ({
+        ...movie,
+        genre: genreMap[movie.genreId] || "Unknown Genre",
+        actors: movie.actors.map(
+          (actorRef) =>
+            actorMap[actorRef.actorId] || {
               name: "Unknown Actor",
               nationality: "Unknown",
             }
         ),
       }));
 
-      const directorsData = Array.from(
-        new Set(movieData.map((movie) => movie.director))
-      );
-
       setMovies(movieData);
-      setActors(actorData);
-      setGenres(genreData);
-      setDirectors(directorsData);
+      setActors(data.actors);
+      setGenres(data.genres);
+      setDirectors([...new Set(movieData.map((movie) => movie.director))]);
     };
 
-    fetchXMLData();
+    fetchData();
   }, []);
 
   return (
     <div>
-      <h1 className='text-2xl font-bold'>DOMParser</h1>
+      <h1 className='text-2xl font-bold'>SAX Parser</h1>
       <p className='mt-4 '>
-        The DOMParser in this component processes XML data by transforming it
-        into a DOM (Document Object Model) structure, allowing direct access to
-        XML elements and attributes, similar to navigating HTML in the browser.
+        This component uses the <code>sax</code> library to parse XML data as a
+        stream, processing each XML element sequentially as it’s read. Unlike
+        traditional XML parsing, which loads the entire XML document into
+        memory, <code>sax</code> processes the data one element at a time. This
+        approach is more efficient, especially for large XML files, as it
+        reduces memory usage.
       </p>
-      <div>
-        <div
-          className='mb-5 mt-2 cursor-pointer text-blue-500 text-lg hover:underline'
-          onClick={() => {
-            setShowMore(!showMore);
-          }}
-        >
-          {showMore ? "Click to hide info" : "Click for more info"}
-        </div>
+      <div
+        className='mb-5 mt-2 cursor-pointer text-blue-500 text-lg hover:underline'
+        onClick={() => setShowMore(!showMore)}
+      >
+        {showMore ? "Click to hide info" : "Click for more info"}
+      </div>
 
-        <div
-          className={`my-5 transition-all duration-300 ease-out ${
-            showMore
-              ? "opacity-100 max-h-screen"
-              : "opacity-0 max-h-0 overflow-hidden"
-          }`}
-        >
-          <h2 className='text-xl font-semibold mb-2'>DOMParser Methods</h2>
+      <div
+        className={`my-5 transition-all duration-300 ease-out ${
+          showMore
+            ? "opacity-100 max-h-screen"
+            : "opacity-0 max-h-0 overflow-hidden"
+        }`}
+      >
+        <h2 className='text-xl font-semibold mb-2'>SAXParser Methods</h2>
 
-          <ul className='list-disc list-inside space-y-2'>
-            <li>
-              <strong>getElementsByTagName:</strong> Searches within the XML
-              document for all elements of a given tag name, allowing us to
-              extract <code>&lt;actor&gt;</code>, <code>&lt;genre&gt;</code>,
-              and <code>&lt;movie&gt;</code> elements as needed.
-            </li>
-            <li>
-              <strong>getAttribute:</strong> Accesses an attribute (like{" "}
-              <code>id</code> or <code>genreId</code>) within an XML element.
-            </li>
-            <li>
-              <strong>textContent:</strong> Retrieves the text inside an XML
-              element, allowing easy access to element contents, such as{" "}
-              <code>&lt;name&gt;</code> or <code>&lt;description&gt;</code>.
-            </li>
-          </ul>
-        </div>
+        <ul className='list-disc list-inside space-y-2'>
+          <li>
+            <strong>onopentag:</strong> Triggered when the parser encounters an
+            opening tag. This allows you to initialize objects for elements like{" "}
+            <code>&lt;movie&gt;</code> or <code>&lt;actor&gt;</code>, setting up
+            storage for their data.
+          </li>
+          <li>
+            <strong>ontext:</strong> Called when the parser encounters text
+            within an element. This lets you capture the content, such as movie
+            titles or actor names, storing it in the current object.
+          </li>
+          <li>
+            <strong>onclosetag:</strong> Triggered when a closing tag is
+            encountered. At this point, you can finalize the current object, for
+            example, adding a fully populated movie to the movies list.
+          </li>
+          <li>
+            <strong>onend:</strong> Called once the parser reaches the end of
+            the XML document. This marks the completion of parsing, and you can
+            now return or use the fully structured data.
+          </li>
+        </ul>
       </div>
 
       <div className='mb-4 flex space-x-2'>
@@ -214,4 +193,4 @@ function DOMMovieCollection() {
   );
 }
 
-export default DOMMovieCollection;
+export default SAXMovieCollection;

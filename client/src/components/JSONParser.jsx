@@ -6,6 +6,7 @@ function JSONMovieCollection() {
   const [genres, setGenres] = useState(null);
   const [directors, setDirectors] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [showMore, setShowMore] = useState(false);
 
   useEffect(() => {
     const fetchJSONData = async () => {
@@ -55,10 +56,68 @@ function JSONMovieCollection() {
   return (
     <div>
       <h1 className='text-2xl font-bold'>Fast XML Parser</h1>
-      <p className='mt-4 mb-4'>
-        This component uses `fast-xml-parser` to parse XML into JSON, making
-        data handling easier.
+      <p className='mt-4 '>
+        The <code>fast-xml-parser</code> is a high-performance XML parser for
+        JavaScript that directly converts XML into JSON, providing a
+        JavaScript-native way to work with XML data.
       </p>
+      <div
+        className='mb-5 mt-2 cursor-pointer text-blue-500 text-lg hover:underline'
+        onClick={() => {
+          setShowMore(!showMore);
+        }}
+      >
+        {showMore ? "Click to hide info" : "Click for more info"}
+      </div>
+      <div
+        className={`mb-5 transition-all duration-300 ease-out ${
+          showMore
+            ? "opacity-100 max-h-screen"
+            : "opacity-0 max-h-0 overflow-hidden"
+        }`}
+      >
+        <h2 className='text-xl font-semibold mb-2'>Fast-xml-parser Methods</h2>
+        <ul className='list-disc list-inside space-y-2'>
+          <li>
+            <strong>parse:</strong> The main method to convert XML data into
+            JSON. Accepts an XML string and returns the JSON representation.
+          </li>
+          <li>
+            <strong>validate:</strong> Checks if the XML string is well-formed
+            and valid. Returns `true` if valid or an error object if there’s an
+            issue with the XML structure.
+          </li>
+          <li>
+            <strong>Configuration Options:</strong>
+            <ul className='list-inside ml-5'>
+              <li>
+                <code>ignoreAttributes</code>: Specifies whether XML attributes
+                (like `id` or `genreId`) should be included in the JSON output.
+                Defaults to `false`.
+              </li>
+              <li>
+                <code>attributeNamePrefix</code>: Adds a prefix to attribute
+                names in JSON output, helping differentiate them from element
+                names. Defaults to an empty string.
+              </li>
+              <li>
+                <code>parseNodeValue</code>: Automatically converts XML node
+                values into JavaScript data types like numbers or booleans,
+                instead of leaving them as strings.
+              </li>
+              <li>
+                <code>trimValues</code>: Removes leading and trailing whitespace
+                from node values, providing cleaner JSON output. Defaults to
+                `true`.
+              </li>
+              <li>
+                <code>ignoreDeclaration</code>: Skips the XML declaration if
+                present in the XML string.
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
 
       <div className='mb-4 flex space-x-2'>
         {["movies", "actors", "genres", "directors"].map((category) => (
