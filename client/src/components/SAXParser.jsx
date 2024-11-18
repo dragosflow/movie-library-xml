@@ -11,11 +11,12 @@ function SAXMovieCollection() {
   useEffect(() => {
     const fetchData = async () => {
       const data = await window.electronAPI.loadXMLDataSax();
-      console.log("SAX Parsed Data:", data);
+      console.log("SAX Parsed Data:", data); // Check structure of `data.movies`
 
       const genreMap = Object.fromEntries(
         data.genres.map((genre) => [genre.id, genre.name])
       );
+
       const actorMap = Object.fromEntries(
         data.actors.map((actor) => [actor.id, actor])
       );
@@ -25,7 +26,7 @@ function SAXMovieCollection() {
         genre: genreMap[movie.genreId] || "Unknown Genre",
         actors: movie.actors.map(
           (actorRef) =>
-            actorMap[actorRef.actorId] || {
+            actorMap[actorRef] || {
               name: "Unknown Actor",
               nationality: "Unknown",
             }

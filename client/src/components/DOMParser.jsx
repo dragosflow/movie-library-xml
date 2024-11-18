@@ -14,6 +14,7 @@ function DOMMovieCollection() {
       const parser = new DOMParser();
       const doc = parser.parseFromString(data, "application/xml");
 
+      // Extract actor details and create a map for quick access
       const actorElements = Array.from(doc.getElementsByTagName("actor"));
       const actorData = actorElements
         .map((actor) => ({
@@ -28,6 +29,7 @@ function DOMMovieCollection() {
         actorData.map((actor) => [actor.id, actor])
       );
 
+      // Extract genre details and create a map for quick access
       const genreElements = Array.from(doc.getElementsByTagName("genre"));
       const genreData = genreElements.map((genre) => ({
         id: genre.getAttribute("id"),
@@ -39,25 +41,28 @@ function DOMMovieCollection() {
         genreData.map((genre) => [genre.id, genre.name])
       );
 
+      // Extract movie details and link actors and genres based on references
       const movieElements = Array.from(doc.getElementsByTagName("movie"));
       const movieData = movieElements.map((movie) => ({
         title: movie.getElementsByTagName("title")[0].textContent,
         year: movie.getElementsByTagName("year")[0].textContent,
         director: movie.getElementsByTagName("director")[0].textContent,
         genre: genreMap[movie.getAttribute("genreId")] || "Unknown Genre",
-        actors: Array.from(movie.getElementsByTagName("actor")).map(
-          (actor) =>
-            actorMap[actor.getAttribute("actorId")] || {
+        actors: Array.from(movie.getElementsByTagName("actorRef")).map(
+          (actorRef) =>
+            actorMap[actorRef.textContent] || {
               name: "Unknown Actor",
               nationality: "Unknown",
             }
         ),
       }));
 
+      // Extract unique directors
       const directorsData = Array.from(
         new Set(movieData.map((movie) => movie.director))
       );
 
+      // Set state with extracted data
       setMovies(movieData);
       setActors(actorData);
       setGenres(genreData);

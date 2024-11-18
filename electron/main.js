@@ -1,13 +1,17 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const fsPromises = require("fs").promises;
 const { DOMParser } = require("xmldom");
 const { XMLParser } = require("fast-xml-parser");
 const sax = require("sax");
+const { validateXML, memoryPages } = require("xmllint-wasm");
+const xpath = require("xpath");
+
 function createWindow() {
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1600,
+    height: 1200,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -27,6 +31,7 @@ function createWindow() {
     const doc = new DOMParser().parseFromString(xmlData, "application/xml");
     return xmlData;
   });
+
   /// for homework 1, using FastParser
   ipcMain.handle("load-xml-data-fast", async () => {
     const xmlData = fs.readFileSync(
@@ -56,6 +61,7 @@ function createWindow() {
         actors: [],
         genres: [],
       };
+
       let currentElement = null;
       let currentMovie = null;
       let currentActor = null;
@@ -71,9 +77,9 @@ function createWindow() {
           currentMovie.genreId = node.attributes.genreId;
         }
 
-        // Handle <actor> inside <movie>
-        if (node.name === "actor" && currentMovie) {
-          currentMovie.actors.push({ actorId: node.attributes.actorId });
+        // Handle <actorRef> inside <movie>
+        if (node.name === "actorRef" && currentMovie) {
+          currentElement = "actorRef";
         }
 
         // Handle standalone <actor>
@@ -89,19 +95,23 @@ function createWindow() {
 
       parser.ontext = (text) => {
         if (currentElement === "title" && currentMovie) {
-          currentMovie.title = text;
+          currentMovie.title = (currentMovie.title || "") + text;
         } else if (currentElement === "year" && currentMovie) {
-          currentMovie.year = text;
+          currentMovie.year = (currentMovie.year || "") + text;
         } else if (currentElement === "director" && currentMovie) {
-          currentMovie.director = text;
-        } else if (currentElement === "name" && currentActor) {
-          currentActor.name = text;
+          currentMovie.director = (currentMovie.director || "") + text;
+        } else if (currentElement === "actorRef" && currentMovie) {
+          currentMovie.actors.push(text.trim());
+        } else if (currentElement === "name") {
+          if (currentActor) {
+            currentActor.name = (currentActor.name || "") + text;
+          } else if (currentGenre) {
+            currentGenre.name = (currentGenre.name || "") + text;
+          }
         } else if (currentElement === "nationality" && currentActor) {
-          currentActor.nationality = text;
-        } else if (currentElement === "name" && currentGenre) {
-          currentGenre.name = text;
+          currentActor.nationality = (currentActor.nationality || "") + text;
         } else if (currentElement === "description" && currentGenre) {
-          currentGenre.description = text;
+          currentGenre.description = (currentGenre.description || "") + text;
         }
       };
 
@@ -131,6 +141,99 @@ function createWindow() {
 
       parser.write(xmlData).close();
     });
+  });
+
+  ipcMain.handle(
+    "validate-xml-with-domparser",
+    async (e, xmlFilePath = null) => {
+      const defaultXMLPath = path.join(
+        __dirname,
+        "assets/data/movieCollection.xml"
+      );
+      const schemaPath = path.join(__dirname, "assets/data/movieSchema.xsd");
+      const dependencyXSDPath = path.join(
+        __dirname,
+        "assets/data/movieSchema.xsd"
+      ); // Example dependency, if applicable
+
+      const xmlPath = xmlFilePath || defaultXMLPath;
+      console.log("Validating XML file:", xmlPath);
+      try {
+        // Load the XML and XSD files asynchronously
+        const xmlData = await fsPromises.readFile(xmlPath, "utf8");
+        const xsdData = await fsPromises.readFile(schemaPath, "utf8");
+        const dependencyXsdData = await fsPromises.readFile(
+          dependencyXSDPath,
+          "utf8"
+        );
+
+        // Run validation with configuration for `xmllint-wasm`
+        const validationResult = await validateXML({
+          xml: [
+            {
+              fileName: path.basename(xmlPath),
+              contents: xmlData,
+            },
+          ],
+          schema: [
+            {
+              fileName: path.basename(schemaPath),
+              contents: xsdData,
+            },
+          ],
+          preload: [
+            {
+              fileName: "xml.xsd",
+              contents: dependencyXsdData,
+            },
+          ],
+          initialMemoryPages: 256,
+          maxMemoryPages: 2 * memoryPages.GiB,
+        });
+
+        if (validationResult.valid) {
+          return { valid: true, message: "XML is valid against the schema" };
+        } else {
+          return {
+            valid: false,
+            message: "XML validation errors found",
+            errors: validationResult.errors,
+          };
+        }
+      } catch (error) {
+        console.error("Validation error:", error);
+        return {
+          valid: false,
+          message: "An error occurred during validation",
+          error: error.message,
+        };
+      }
+    }
+  );
+
+  ipcMain.handle("run-xpath-query", async (event, { expression }) => {
+    try {
+      const xmlData = fs.readFileSync(
+        path.join(__dirname, "assets/data/movieCollection.xml"),
+        "utf8"
+      );
+      const doc = new DOMParser().parseFromString(xmlData, "application/xml");
+      const result = xpath.select(expression, doc);
+
+      const output = result.map((node) => node.toString());
+      return { success: true, result: output };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+  ipcMain.handle("show-open-dialog", async () => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      properties: ["openFile"],
+      filters: [{ name: "XML Files", extensions: ["xml"] }],
+    });
+
+    if (canceled) return { canceled, filePaths: [] };
+    return { canceled, filePaths };
   });
 }
 

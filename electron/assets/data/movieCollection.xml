@@ -1,13 +1,14 @@
 <?xml version="1.0" ?>
-<movieCollection>
+<movieCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:noNamespaceSchemaLocation="path/to/movieSchema.xsd">
     <movies>
         <movie id="m1" genreId="g1">
             <title>The Shawshank Redemption</title>
             <year>1994</year>
             <director>Frank Darabont</director>
             <actors>
-                <actor actorId="a1"/>
-                <actor actorId="a2"/>
+                <actorRef>a1</actorRef>
+                <actorRef>a2</actorRef>
             </actors>
         </movie>
         <movie id="m2" genreId="g2">
@@ -15,8 +16,8 @@
             <year>2008</year>
             <director>Christopher Nolan</director>
             <actors>
-                <actor actorId="a3"/>
-                <actor actorId="a4"/>
+                <actorRef>a3</actorRef>
+                <actorRef>a4</actorRef>
             </actors>
         </movie>
     </movies>

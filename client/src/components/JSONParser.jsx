@@ -23,10 +23,10 @@ function JSONMovieCollection() {
                 jsonData.movieCollection.genres.genre.find(
                   (genre) => genre.id === movie.genreId
                 )?.name || "Unknown Genre",
-              actors: movie.actors.actor.map(
+              actors: movie.actors.actorRef.map(
                 (actorRef) =>
                   jsonData.movieCollection.actors.actor.find(
-                    (actor) => actor.id === actorRef.actorId
+                    (actor) => actor.id === actorRef
                   ) || { name: "Unknown Actor", nationality: "Unknown" }
               ),
             })

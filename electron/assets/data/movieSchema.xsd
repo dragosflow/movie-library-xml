@@ -1,59 +1,4 @@
-export const xml1 = `
-<?xml version="1.0" ?>
-<movieCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                 xsi:noNamespaceSchemaLocation="path/to/movieSchema.xsd">
-    <movies>
-        <movie id="m1" genreId="g1">
-            <title>The Shawshank Redemption</title>
-            <year>1994</year>
-            <director>Frank Darabont</director>
-            <actors>
-                <actorRef>a1</actorRef>
-                <actorRef>a2</actorRef>
-            </actors>
-        </movie>
-        <movie id="m2" genreId="g2">
-            <title>The Dark Knight</title>
-            <year>2008</year>
-            <director>Christopher Nolan</director>
-            <actors>
-                <actorRef>a3</actorRef>
-                <actorRef>a4</actorRef>
-            </actors>
-        </movie>
-    </movies>
-    <actors>
-        <actor id="a1">
-            <name>Tim Robbins</name>
-            <nationality>American</nationality>
-        </actor>
-        <actor id="a2">
-            <name>Morgan Freeman</name>
-            <nationality>American</nationality>
-        </actor>
-        <actor id="a3">
-            <name>Christian Bale</name>
-            <nationality>British</nationality>
-        </actor>
-        <actor id="a4">
-            <name>Heath Ledger</name>
-            <nationality>Australian</nationality>
-        </actor>
-    </actors>
-    <genres>
-        <genre id="g1">
-            <name>Drama</name>
-            <description>Stories with emotional and thematic depth</description>
-        </genre>
-        <genre id="g2">
-            <name>Action</name>
-            <description>High-intensity scenes with physical feats</description>
-        </genre>
-    </genres>
-</movieCollection>
-`;
-
-export const xmlschema = `<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
   <!-- Root Element -->
@@ -123,4 +68,3 @@ export const xmlschema = `<?xml version="1.0" encoding="UTF-8"?>
   </xs:complexType>
 
 </xs:schema>
-`;
